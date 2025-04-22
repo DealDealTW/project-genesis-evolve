@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Popover,
@@ -5,13 +6,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Bell, MoreHorizontal, Apple, ShoppingBag, AlertCircle, Home, Tag, Utensils } from 'lucide-react';
+import { Bell, AlertCircle, Home, Utensils } from 'lucide-react';
 import { useApp, Item, calculateDaysUntilExpiry, formatDateWithUserPreference } from '@/contexts/AppContext';
 import { useTranslation } from '@/utils/translations';
-import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Notifications: React.FC = () => {
   const { items, language, selectedItem, setSelectedItem, settings } = useApp();
@@ -19,6 +19,7 @@ const Notifications: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
+  const isMobile = useIsMobile();
   
   const getAttentionItems = (): Item[] => {
     return items.filter(item => {
@@ -122,7 +123,11 @@ const Notifications: React.FC = () => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative hover:bg-muted/50">
+        <Button 
+          variant="ghost" 
+          size={isMobile ? "lg" : "icon"} 
+          className="relative hover:bg-muted/50 p-2 h-10 w-10"
+        >
           <Bell className="h-5 w-5" />
           {notificationCount > 0 && (
             <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-600 text-white">
@@ -144,14 +149,14 @@ const Notifications: React.FC = () => {
             {t('noAttentionItems')}
           </div>
         ) : (
-          <div className="max-h-[250px] overflow-auto">
+          <div className="max-h-[280px] overflow-auto">
             {displayItems.map(item => {
               const status = getItemStatus(item);
               
               return (
                 <div 
                   key={item.id}
-                  className="p-3 hover:bg-muted/50 cursor-pointer border-b border-gray-100 dark:border-gray-800 last:border-b-0"
+                  className="p-4 hover:bg-muted/50 cursor-pointer border-b border-gray-100 dark:border-gray-800 last:border-b-0"
                   onClick={() => handleItemClick(item)}
                 >
                   <div className="flex justify-between items-center gap-2 mb-1"> 
@@ -183,7 +188,7 @@ const Notifications: React.FC = () => {
                         <AlertCircle className="h-3 w-3 text-primary" />
                       )}
                     </div>
-                    <Badge className={`text-xs ${status.badgeClass} border px-1.5 py-0.5`}> 
+                    <Badge className={`text-xs ${status.badgeClass} border px-2 py-1`}> 
                       {status.text}
                     </Badge>
                   </div>
@@ -192,7 +197,7 @@ const Notifications: React.FC = () => {
             })}
             {!showAllNotifications && attentionItems.length > 4 && (
               <button
-                className="w-full p-3 text-center text-sm text-primary hover:bg-muted/50 cursor-pointer border-t border-gray-100 dark:border-gray-800"
+                className="w-full p-4 text-center text-sm text-primary hover:bg-muted/50 cursor-pointer border-t border-gray-100 dark:border-gray-800"
                 onClick={handleShowAllClick}
               >
                 {language === 'en' 

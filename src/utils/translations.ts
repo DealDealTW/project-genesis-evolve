@@ -53,6 +53,7 @@ export type TranslationKey = keyof typeof translations['en'] |
   'unitsWastedTooltip' |
   'detailedCategories' |
   'otherCategories' |
+  'back' |
   // Dashboard keys
   'itemSingular' | 'unitSingular' | 'items' | 'units' | 'itemCountTooltip' | 'barcodeInput' |
   // Shopping List Keys

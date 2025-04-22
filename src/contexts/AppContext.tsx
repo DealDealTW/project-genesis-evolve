@@ -1,26 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Session, User as SupabaseUser, Provider } from '@supabase/supabase-js'; // Import Supabase types
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { Session, User as SupabaseUser, Provider } from '@supabase/supabase-js';
 import { addDays, differenceInDays, parseISO, format } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import { useToast } from "../hooks/use-toast";
 import { categorySubcategories, determineSubcategory } from '../utils/categoryConfig';
-import { supabase } from '../lib/supabaseClient'; // Import supabase client
+import { supabase } from '../lib/supabaseClient';
 
-// Define ItemCategory here before its use
 export type ItemCategory = 'All' | 'Food' | 'Household';
 
-// 添加固定的默認過期天數和通知天數
 export const DEFAULT_EXPIRY_DAYS = 7;
 export const DEFAULT_NOTIFY_DAYS = 3;
 
-// Simplified User type (no Firebase)
 export interface User {
   id?: string;
   username?: string;
   email?: string;
 }
 
-export type FilterType = 'All' | 'Food' | 'Household';
+export type FilterType = 'All' | 'Food' | 'Household' | 'Expiring' | 'Expired';
 
 export interface Item {
   id: string;
@@ -41,7 +38,6 @@ export interface Item {
   lastRepurchased?: string;
 }
 
-// 購物清單項目接口
 export interface ShopItem {
   id: string;
   name: string;
@@ -50,14 +46,12 @@ export interface ShopItem {
   subcategory?: string;
   dateAdded: string;
   checked: boolean;
-  originItemId?: string; // 如果來自已用項目，保存原始項目ID
+  originItemId?: string;
 }
 
-// Define supported date formats
 export type DateFormatOption = 'yyyy-MM-dd' | 'MM/dd/yyyy' | 'dd/MM/yyyy';
 export type ViewModeOption = 'grid' | 'compact';
 
-// 應用設置接口
 export interface AppSettings {
   dateFormat: DateFormatOption;
   defaultViewMode: ViewModeOption;
@@ -65,25 +59,22 @@ export interface AppSettings {
   familySize?: number;
   autoAdjustFamilySize?: boolean;
   subcategoryMultipliers?: Record<string, number>;
-  notificationsEnabled: boolean; // 添加通知啟用設定
-  advancedQuantitySettings?: boolean; // 高級數量設置開關
-  defaultNotifyDaysBefore: number; // 添加默認的通知天數設定
+  notificationsEnabled: boolean;
+  advancedQuantitySettings?: boolean;
+  defaultNotifyDaysBefore: number;
 }
 
-// --- Add Usage History Entry Type --- 
 export interface UsageHistoryEntry {
-  id: string; // Unique ID for the history entry
+  id: string;
   itemId: string;
   itemName: string;
   type: 'used' | 'wasted';
   quantity: number;
-  timestamp: string; // ISO date string
-  category?: ItemCategory; // 添加類別信息以便於統計
+  timestamp: string;
+  category?: ItemCategory;
 }
-// <----------------------------------->
 
 interface AppContextType {
-  // Supabase Auth State
   session: Session | null;
   user: SupabaseUser | null;
   authLoading: boolean;
@@ -94,7 +85,7 @@ interface AppContextType {
   resetPassword: (email: string) => Promise<boolean>;
   updatePassword: (newPassword: string) => Promise<boolean>;
   deleteAccount: () => Promise<boolean>;
-  
+
   items: Item[];
   addItem: (item: Omit<Item, 'id' | 'daysUntilExpiry' | 'dateAdded'>) => void;
   addMultipleItems: (newItems: Omit<Item, 'id' | 'daysUntilExpiry' | 'dateAdded'>[]) => number;
@@ -138,11 +129,9 @@ interface AppContextType {
   setDashboardGroupBySubcategory: (value: boolean) => void;
   shopListGroupBySubcategory: boolean;
   setShopListGroupBySubcategory: (value: boolean) => void;
-  
-  // Add the currentUser property
+
   currentUser?: {
     isPremium?: boolean;
-    // Add other user properties as needed
   };
 }
 
@@ -163,12 +152,12 @@ export const calculateDaysUntilExpiry = (expiryDate: string): number => {
     const expiry = parseISO(expiryDate);
     if (isNaN(expiry.getTime())) {
       console.warn(`Invalid date format for expiryDate: ${expiryDate}`);
-      return 9999; // Return a large number for invalid dates
+      return 9999;
     }
     return differenceInDays(expiry, today);
   } catch (error) {
     console.error(`Error parsing date: ${expiryDate}`, error);
-    return 9999; // Return a large number on error
+    return 9999;
   }
 };
 
@@ -178,14 +167,13 @@ export const getExpiryDateFromDays = (days: number | string): string => {
   return format(date, 'yyyy-MM-dd');
 };
 
-// 根據用戶設置格式化日期的函數
 export const formatDateWithUserPreference = (dateString: string, dateFormat: DateFormatOption): string => {
   try {
     const date = parseISO(dateString);
     return format(date, dateFormat);
   } catch (error) {
     console.error(`Error formatting date: ${dateString}`, error);
-    return dateString; // 在發生錯誤時返回原始日期字符串
+    return dateString;
   }
 };
 
@@ -209,14 +197,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return savedItems ? JSON.parse(savedItems) : [];
   });
   
-  // --- Add usage history state --- 
   const [usageHistory, setUsageHistory] = useState<UsageHistoryEntry[]>(() => {
     const savedHistory = localStorage.getItem('whatsleftUsageHistory');
     return savedHistory ? JSON.parse(savedHistory) : [];
   });
-  // <----------------------------->
-  
-  // 應用設置 - 先讀取設置，因為其他的 state 依賴這些設置
+
   const [settings, setSettings] = useState<AppSettings>(() => {
     const savedSettings = localStorage.getItem('whatsleftSettings');
     return savedSettings ? JSON.parse(savedSettings) : {
@@ -226,26 +211,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       familySize: 2,
       autoAdjustFamilySize: false,
       subcategoryMultipliers: {},
-      notificationsEnabled: true, // 添加默認值
-      advancedQuantitySettings: false, // 添加高級數量設置默認值
-      defaultNotifyDaysBefore: DEFAULT_NOTIFY_DAYS // 使用默認通知天數
+      notificationsEnabled: true,
+      advancedQuantitySettings: false,
+      defaultNotifyDaysBefore: DEFAULT_NOTIFY_DAYS
     };
   });
-  
-  // 購物清單項目
+
   const [shopItems, setShopItems] = useState<ShopItem[]>(() => {
     const savedShopItems = localStorage.getItem('whatsleftShopItems');
     return savedShopItems ? JSON.parse(savedShopItems) : [];
   });
-  
+
   const [sort, setSort] = useState<'name' | 'expiry' | 'quantity'>(() => {
-    // 嘗試從本地存儲中獲取排序設置，默認爲 'expiry'
     const savedSort = localStorage.getItem('sort') as 'name' | 'expiry' | 'quantity';
     return savedSort || 'expiry';
   });
-  
+
   const [filter, setFilter] = useState<FilterType>(() => {
-    // 始終使用'All'作為初始值
     return 'All';
   });
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -266,26 +248,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return savedUrgentFilter ? JSON.parse(savedUrgentFilter) : 'all';
   });
 
-  // 獲取toast函數
   const { toast } = useToast();
 
-  // 持久化分組狀態
   const [dashboardGroupBySubcategory, setDashboardGroupBySubcategoryState] = useState<boolean>(() => {
     const saved = localStorage.getItem('dashboardGroupBySubcategory');
-    return saved !== null ? JSON.parse(saved) : true; // Default to true (grouped)
+    return saved !== null ? JSON.parse(saved) : true;
   });
   const [shopListGroupBySubcategory, setShopListGroupBySubcategoryState] = useState<boolean>(() => {
     const saved = localStorage.getItem('shopListGroupBySubcategory');
-    return saved !== null ? JSON.parse(saved) : false; // Default to false (ungrouped) for ShopList
+    return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 計算即將過期和已過期的項目數量
   const [expiringItemsCount, setExpiringItemsCount] = useState<number>(0);
 
-  // 教學狀態
-  const [showTutorial, setShowTutorial] = useState<boolean>(false); // 初始為 false
+  const [showTutorial, setShowTutorial] = useState<boolean>(false);
 
-  // Fetch initial session and subscribe to auth changes
   useEffect(() => {
     setAuthLoading(true);
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -300,33 +277,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const currentPath = window.location.pathname;
         
         if (_event === 'INITIAL_SESSION') {
-          // Handle initial load, might not need navigation here unless redirecting from a specific page
           setSession(session);
           setUser(session?.user ?? null);
         } else if (_event === 'SIGNED_IN') {
           setSession(session);
           setUser(session?.user ?? null);
-          // Check if user is NOT on the settings page before redirecting
           if (currentPath !== '/settings') {
-            // Navigate to dashboard or intended page after sign in
-            // Example: navigate('/dashboard'); // You might need to import useNavigate from react-router-dom
             console.log("User signed in, redirecting (if not on /settings).");
-            // Add your navigation logic here if needed, using useNavigate() if in a component context
-            // For now, we'll just log, assuming navigation happens elsewhere or is handled by AuthCallback
+            setShowTutorial(false);
           }
         } else if (_event === 'SIGNED_OUT') {
           setSession(null);
           setUser(null);
-          // Optionally navigate to login page on sign out
-          // Example: navigate('/login');
           console.log("User signed out.");
         } else if (_event === 'PASSWORD_RECOVERY') {
-          // Handle password recovery event (e.g., show a notification)
         } else if (_event === 'TOKEN_REFRESHED') {
-          // Token refreshed, update session if needed
-          setSession(session);
         } else if (_event === 'USER_UPDATED') {
-          // User details updated, update user state
           setUser(session?.user ?? null);
         }
         
@@ -337,7 +303,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, []); // Empty dependency array ensures this runs only once
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('whatsleftItems', JSON.stringify(items));
@@ -359,7 +325,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('whatsleftSettings', JSON.stringify(settings));
     
-    // 如果設置改變，應用新的默認值
     if (!localStorage.getItem('whatsleftViewMode')) {
       setViewMode(settings.defaultViewMode);
     }
@@ -377,52 +342,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('whatsleftViewMode', JSON.stringify(viewMode));
   }, [viewMode]);
 
-  // 計算即將過期和已過期的項目數量
   useEffect(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     const count = items.filter(item => {
-      if (item.used) return false; // 忽略已使用的項目
+      if (item.used) return false;
       try {
         const expiry = parseISO(item.expiryDate);
-        if (isNaN(expiry.getTime())) return false; // 忽略無效日期
-        
+        if (isNaN(expiry.getTime())) return false;
         const daysLeft = differenceInDays(expiry, today);
-        // 檢查是否在通知天數內或已過期
         return daysLeft <= DEFAULT_NOTIFY_DAYS || daysLeft < 0;
       } catch {
-        return false; // 忽略解析錯誤的日期
+        return false;
       }
     }).length;
     
     setExpiringItemsCount(count);
     console.log("Updated expiring items count:", count);
-  }, [items]); // 只依賴items，因為通知天數現在是固定的
+  }, [items]);
 
   useEffect(() => {
     localStorage.setItem('whatsleftUsageHistory', JSON.stringify(usageHistory));
   }, [usageHistory]);
 
-  // useEffect to save dashboard grouping preference
   useEffect(() => {
     localStorage.setItem('dashboardGroupBySubcategory', JSON.stringify(dashboardGroupBySubcategory));
   }, [dashboardGroupBySubcategory]);
 
-  // useEffect to save shop list grouping preference
   useEffect(() => {
     localStorage.setItem('shopListGroupBySubcategory', JSON.stringify(shopListGroupBySubcategory));
   }, [shopListGroupBySubcategory]);
 
-  // Wrapper functions for setting state (optional but good practice)
   const setDashboardGroupBySubcategory = (value: boolean) => {
     setDashboardGroupBySubcategoryState(value);
   };
   const setShopListGroupBySubcategory = (value: boolean) => {
     setShopListGroupBySubcategoryState(value);
   };
-
-  // --- Implement CRUD Functions ---
 
   const addItem = (newItemData: Omit<Item, 'id' | 'daysUntilExpiry' | 'dateAdded'>) => {
     const today = new Date();
@@ -431,7 +388,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...newItemData,
       daysUntilExpiry: calculateDaysUntilExpiry(newItemData.expiryDate),
       dateAdded: today.toISOString(),
-      // 如果沒有指定notifyDaysBefore，則使用默認值
       notifyDaysBefore: newItemData.notifyDaysBefore !== undefined ? 
         newItemData.notifyDaysBefore : 
         settings.defaultNotifyDaysBefore
@@ -446,7 +402,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...itemData,
       daysUntilExpiry: calculateDaysUntilExpiry(itemData.expiryDate),
       dateAdded: today.toISOString(),
-      // 如果沒有指定notifyDaysBefore，則使用默認值
       notifyDaysBefore: itemData.notifyDaysBefore !== undefined ? 
         itemData.notifyDaysBefore : 
         settings.defaultNotifyDaysBefore
@@ -460,7 +415,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prevItems.map(item => {
         if (item.id === id) {
           const updatedItem = { ...item, ...itemUpdate };
-          // Recalculate daysUntilExpiry if expiryDate changes
           if (itemUpdate.expiryDate) {
             updatedItem.daysUntilExpiry = calculateDaysUntilExpiry(itemUpdate.expiryDate);
           }
@@ -473,14 +427,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteItem = (id: string) => {
     setItems(prevItems => prevItems.filter(item => item.id !== id));
-    // Optionally, move to a 'deleted' state instead of filtering out
-    // setItems(prevItems =>
-    //   prevItems.map(item =>
-    //     item.id === id
-    //       ? { ...item, deleted: true, dateDeleted: new Date().toISOString() }
-    //       : item
-    //   )
-    // );
   };
 
   const markItemAsUsed = (id: string) => {
@@ -488,12 +434,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setItems(prevItems => 
       prevItems.map(item => {
         if (item.id === id) {
-          // Set used flag, date, AND quantity to 0
           markedItem = { 
             ...item, 
             used: true, 
             dateUsed: new Date().toISOString(),
-            quantity: '0' // Explicitly set quantity to 0
+            quantity: '0'
           };
           console.log(`[markItemAsUsed] Marking ${item.name} as used and setting quantity to 0.`);
           return markedItem;
@@ -502,16 +447,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     );
     
-    // --- Add to usage history ---
-    // Use the state *before* modification to get original quantity
     const originalItem = items.find(i => i.id === id);
-    if (originalItem) { // Check if originalItem exists
+    if (originalItem) {
       const historyEntry: UsageHistoryEntry = {
         id: uuid(),
         itemId: id,
         itemName: originalItem.name,
         type: 'used',
-        quantity: parseInt(originalItem.quantity) || 1, // Log the original quantity used
+        quantity: parseInt(originalItem.quantity) || 1,
         timestamp: new Date().toISOString(),
         category: originalItem.category,
       };
@@ -533,7 +476,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       usageHistory,
       dashboardGroupBySubcategory,
       shopListGroupBySubcategory,
-      // Include other relevant states if needed
     };
     return JSON.stringify(dataToExport, null, 2);
   };
@@ -542,12 +484,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const data = JSON.parse(jsonData);
       if (data.items) setItems(data.items);
-      if (data.settings) setSettings(prev => ({ ...prev, ...data.settings })); // Merge imported settings
+      if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
       if (data.shopItems) setShopItems(data.shopItems);
       if (data.usageHistory) setUsageHistory(data.usageHistory);
       if (data.dashboardGroupBySubcategory !== undefined) setDashboardGroupBySubcategoryState(data.dashboardGroupBySubcategory);
       if (data.shopListGroupBySubcategory !== undefined) setShopListGroupBySubcategoryState(data.shopListGroupBySubcategory);
-      // Optionally update filter, viewMode etc. based on imported settings/data
       if (data.settings?.defaultCategory) setFilter(data.settings.defaultCategory);
       if (data.settings?.defaultViewMode) setViewMode(data.settings.defaultViewMode);
 
@@ -560,13 +501,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // --- Shop List Functions ---
   const addToShopList = (newItemData: Omit<ShopItem, 'id' | 'dateAdded' | 'checked'>) => {
-      const newShopItem: ShopItem = {
-        id: uuid(),
+    const newShopItem: ShopItem = {
+      id: uuid(),
       ...newItemData,
-        dateAdded: new Date().toISOString(),
-        checked: false,
+      dateAdded: new Date().toISOString(),
+      checked: false,
     };
     setShopItems(prevItems => [...prevItems, newShopItem]);
   };
@@ -597,50 +537,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const shopItem = shopItems.find(item => item.id === shopItemId);
     if (!shopItem) return false;
     
-     // Handle 'All' category before calling determineSubcategory
-     const categoryForSubcategoryLookup: 'Food' | 'Household' = shopItem.category === 'All' 
-       ? 'Food' // Default to Food if category is All, or choose based on name if possible
-       : shopItem.category;
+    const categoryForSubcategoryLookup: 'Food' | 'Household' = shopItem.category === 'All' 
+      ? 'Food'
+      : shopItem.category;
 
-     const defaultExpiryDays = determineSubcategory(shopItem.name, categoryForSubcategoryLookup).defaultExpiryDays || DEFAULT_EXPIRY_DAYS;
-     const expiryDate = getExpiryDateFromDays(defaultExpiryDays);
+    const defaultExpiryDays = determineSubcategory(shopItem.name, categoryForSubcategoryLookup).defaultExpiryDays || DEFAULT_EXPIRY_DAYS;
+    const expiryDate = getExpiryDateFromDays(defaultExpiryDays);
 
-     const newItem: Omit<Item, 'id' | 'daysUntilExpiry' | 'dateAdded'> = {
+    const newItem: Omit<Item, 'id' | 'daysUntilExpiry' | 'dateAdded'> = {
       name: shopItem.name,
       quantity: shopItem.quantity,
-       category: shopItem.category,
-       subcategory: shopItem.subcategory,
-       expiryDate: expiryDate,
-       notifyDaysBefore: settings.defaultNotifyDaysBefore, // 使用設置中的默認值
-       // image: null, // Reset image or keep if applicable
-     };
-     addItem(newItem);
+      category: shopItem.category,
+      subcategory: shopItem.subcategory,
+      expiryDate: expiryDate,
+      notifyDaysBefore: settings.defaultNotifyDaysBefore,
+    };
+    addItem(newItem);
     removeFromShopList(shopItemId);
-     return true;
-   };
+    return true;
+  };
 
-   const moveMultipleShopItemsToDashboard = (shopItemIds: string[]): number => {
-     let count = 0;
-     shopItemIds.forEach(id => {
-       if (moveShopItemToDashboard(id)) {
-         count++;
-       }
-     });
-     return count;
-   };
+  const moveMultipleShopItemsToDashboard = (shopItemIds: string[]): number => {
+    let count = 0;
+    shopItemIds.forEach(id => {
+      if (moveShopItemToDashboard(id)) {
+        count++;
+      }
+    });
+    return count;
+  };
 
-  // --- Partial Usage/Waste Functions ---
   const recordPartialUsage = (itemId: string, quantityUsed: number) => {
     const item = items.find(i => i.id === itemId);
     if (!item) return;
 
     const currentQuantity = parseInt(item.quantity) || 0;
     if (quantityUsed >= currentQuantity) {
-      markItemAsUsed(itemId); // Mark as fully used if used quantity >= current
+      markItemAsUsed(itemId);
     } else {
-      // Update item quantity
       updateItem(itemId, { quantity: (currentQuantity - quantityUsed).toString() });
-      // Record in history
       const historyEntry: UsageHistoryEntry = {
         id: uuid(),
         itemId: itemId,
@@ -659,7 +594,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!item) return;
 
     const currentQuantity = parseInt(item.quantity) || 0;
-    // 實際要記錄的浪費數量
     const actualWastedQuantity = Math.min(quantityWasted, currentQuantity);
     
     const historyEntry: UsageHistoryEntry = {
@@ -667,27 +601,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       itemId: itemId,
       itemName: item.name,
       type: 'wasted',
-      quantity: actualWastedQuantity, // 確保在所有情況下都有正確的數量
+      quantity: actualWastedQuantity,
       timestamp: new Date().toISOString(),
-      category: item.category // 添加類別信息以便於統計
+      category: item.category,
     };
 
     if (quantityWasted >= currentQuantity) {
-       // Update item quantity to 0 instead of deleting
-       console.log(`[recordPartialWaste] Wasting last ${currentQuantity} units of ${item.name}. Setting quantity to 0.`);
-       updateItem(itemId, { quantity: '0' }); 
+      updateItem(itemId, { quantity: '0' });
     } else {
-      // Update item quantity
       const newQuantity = currentQuantity - quantityWasted;
-      console.log(`[recordPartialWaste] Wasting ${quantityWasted} units of ${item.name}. New quantity: ${newQuantity}.`);
       updateItem(itemId, { quantity: newQuantity.toString() });
     }
     
-    // Add to usage history
     setUsageHistory(prev => [...prev, historyEntry]);
   };
 
-  // Supabase Logout Function
   const logout = async () => {
     setAuthLoading(true);
     try {
@@ -705,15 +633,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // --- Supabase Auth Functions ---
-
   const signUp = async (email: string, password: string): Promise<boolean> => {
     setAuthLoading(true);
     const { data, error } = await supabase.auth.signUp({ 
       email, 
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback` // 確保郵件確認後重定向到我們的應用
+        emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     });
     setAuthLoading(false);
@@ -724,19 +650,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return false;
     }
     
-    // 檢查用戶是否需要郵件確認（取決於您的 Supabase 設定）
     if (data.user && !data.session) {
-      // 用戶已建立但需要驗證郵件
       toast({ 
         title: '註冊成功', 
         description: '請檢查您的電子郵件並點擊確認連結以完成註冊。您在確認前將無法登入。',
-        duration: 6000 // 顯示更長時間
+        duration: 6000
       });
     } else {
-      // 用戶已建立且自動登入（如果 Supabase 專案設定為不需要郵件確認）
       toast({ title: '註冊成功', description: '您已成功註冊並登入！' });
     }
-    // Auth state change will be handled by the listener
     return true;
   };
 
@@ -750,7 +672,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       toast({ title: 'Sign In Error', description: error.message, variant: 'destructive' });
       return false;
     }
-    // Auth state change will be handled by the listener
     toast({ title: 'Sign In Successful', description: 'Welcome back!' });
     return true;
   };
@@ -759,24 +680,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuthLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: provider,
-      // options: {
-      //   redirectTo: window.location.origin // Optional: specify where to redirect after login
-      // }
     });
     setAuthLoading(false);
     if (error) {
       console.error(`Sign in with ${provider} error:`, error);
       toast({ title: `Sign In Error`, description: error.message, variant: 'destructive' });
     }
-    // Supabase handles the redirect and the listener will pick up the session
   };
 
-  // 更改密碼函數
   const updatePassword = async (newPassword: string): Promise<boolean> => {
     setAuthLoading(true);
     
     try {
-      // 確保用戶已登入
       if (!session || !user) {
         toast({ title: '錯誤', description: '您需要先登入才能更改密碼', variant: 'destructive' });
         setAuthLoading(false);
@@ -804,8 +719,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return false;
     }
   };
-  
-  // 發送重設密碼郵件函數
+
   const resetPassword = async (email: string): Promise<boolean> => {
     setAuthLoading(true);
     
@@ -831,8 +745,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return false;
     }
   };
-  
-  // 刪除帳號函數
+
   const deleteAccount = async (): Promise<boolean> => {
     setAuthLoading(true);
     
@@ -843,12 +756,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return false;
       }
       
-      // Call the Supabase Edge Function to handle deletion securely
       const { error: functionError } = await supabase.functions.invoke('delete-user');
       
       if (functionError) {
         console.error("Error calling delete-user function:", functionError);
-    toast({
+        toast({
           title: '帳號刪除失敗',
           description: functionError.message || '無法調用刪除功能，請稍後再試或聯繫管理員。',
           variant: 'destructive' 
@@ -857,12 +769,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return false;
       }
       
-      // Function executed successfully, now log the user out locally
       toast({ title: '帳號已刪除', description: '您的帳號已成功刪除，您將被登出。', });
-      await logout(); // Log out after successful function call
+      await logout();
       setAuthLoading(false);
       return true;
-      
     } catch (error) {
       console.error("Unexpected error during delete account process:", error);
       toast({ title: '帳號刪除失敗', description: '發生未知錯誤', variant: 'destructive' });
@@ -871,12 +781,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // --- End Supabase Auth Functions ---
-
   return (
     <AppContext.Provider
       value={{
-        // Auth state and functions
         session,
         user,
         authLoading,
@@ -888,7 +795,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatePassword,
         deleteAccount,
 
-        // Existing state and functions
         items,
         addItem,
         addMultipleItems,
@@ -932,11 +838,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setDashboardGroupBySubcategory,
         shopListGroupBySubcategory,
         setShopListGroupBySubcategory,
-        
-        // Add the currentUser property
+
         currentUser: {
           isPremium: false,
-          // Add other user properties as needed
         },
       }}
     >

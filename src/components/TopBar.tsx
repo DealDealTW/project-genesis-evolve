@@ -45,7 +45,7 @@ const TopBar: React.FC = () => {
             <button 
               onClick={handleBack}
               className="p-2 -ml-2 rounded-full hover:bg-muted/50 active:bg-muted/70 transition-colors"
-              aria-label={t('back')}
+              aria-label={t('previous')}
             >
               <ChevronLeft className="h-5 w-5" />
             </button>

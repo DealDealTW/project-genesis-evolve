@@ -389,4 +389,6 @@ export const zhTW = {
   notifications: '通知設定',
   defaultNotifyDaysBefore: '預設到期前通知天數',
   defaultNotifyDaysBeforeHint: '設定新增項目的預設到期前通知天數',
-} 
+  previous: '上一步',
+  back: '返回',
+}

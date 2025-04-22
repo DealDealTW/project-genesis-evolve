@@ -1,31 +1,28 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import { AppProvider, useApp } from "@/contexts/AppContext";
-import Dashboard from "./Dashboard";
-import Stats from "./Stats";
-import Settings from "./Settings";
-import ShopList from "./ShopList";
-import NotFound from "./NotFound";
-import TopBar from "@/components/TopBar";
-import BottomNav from "@/components/BottomNav";
-import AppTutorial from "@/components/AppTutorial";
+import { AppProvider, useApp } from "./contexts/AppContext";
+import Dashboard from "./pages/Dashboard";
+import Stats from "./pages/Stats";
+import Settings from "./pages/Settings";
+import ShopList from "./pages/ShopList";
+import NotFound from "./pages/NotFound";
+import TopBar from "./components/TopBar";
+import BottomNav from "./components/BottomNav";
+import AppTutorial from "./components/AppTutorial";
 import MockAdBanner from '@/components/MockAdBanner';
-import { AuthProvider } from '@/contexts/AuthContext';
-import AuthCallback from './AuthCallback';
+import { AuthProvider } from './contexts/AuthContext';
+import AuthCallback from './pages/AuthCallback';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import { toast } from "@/components/ui/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import ResetPasswordPage from './ResetPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 const queryClient = new QueryClient();
 
-// Route change handler component
 const RouteChangeHandler = () => {
   const { setSelectedItem, language } = useApp();
   const location = useLocation();
@@ -38,23 +35,19 @@ const RouteChangeHandler = () => {
     setSelectedItem(null);
   }, [location.pathname, setSelectedItem]);
 
-  // Global back button logic for mobile apps
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
     const handleBackButton = async () => {
       console.log('[Back Button] Path:', location.pathname);
       
-      // Check for open modals
       const hasOpenModal = document.body.classList.contains('overflow-hidden') || 
                            document.querySelector('[role="dialog"]') !== null;
       
-      // Check for multi-select mode
       const isInMultiSelectMode = document.body.classList.contains('multi-select-mode') || 
                                 document.querySelector('.multi-select-active') !== null;
       
       if (hasOpenModal || isInMultiSelectMode) {
-        // Close modals or exit multi-select mode
         console.log('[Back Button] Modal or multi-select active, handling close logic');
         
         if (hasOpenModal) {
@@ -65,17 +58,15 @@ const RouteChangeHandler = () => {
           document.dispatchEvent(new CustomEvent('exit-multi-select'));
         }
         
-        return true; // Prevent default behavior
+        return true;
       } else if (location.pathname !== '/') {
-        // Navigate back to Dashboard if not on Dashboard
         console.log('[Back Button] Not on Dashboard, returning to Dashboard');
         navigate('/');
-        return true; // Prevent default behavior
+        return true;
       } else {
-        // Handle exit confirmation when on Dashboard
         if (doubleBackRef.current) {
           console.log('[Back Button] Second back press, exiting app');
-          return false; // Allow default behavior (exit app)
+          return false;
         } else {
           console.log('[Back Button] Dashboard page, showing exit warning');
           toast({
@@ -85,13 +76,12 @@ const RouteChangeHandler = () => {
             duration: 2000
           });
           
-          // Double-tap exit logic
           doubleBackRef.current = true;
           setTimeout(() => {
             doubleBackRef.current = false;
           }, 2000);
           
-          return true; // Prevent default behavior
+          return true;
         }
       }
     };
@@ -123,7 +113,6 @@ const AppContent = () => {
   const { showTutorial, setShowTutorial } = useApp();
   const isMobile = useIsMobile();
 
-  // Show tutorial on first load
   useEffect(() => {
     const tutorialCompleted = localStorage.getItem('tutorialCompleted');
     if (!tutorialCompleted) {
@@ -171,7 +160,6 @@ function App() {
   );
 }
 
-// Wrapper component for route handling
 const RouteWrapper = () => {
   return (
     <Routes>

@@ -233,8 +233,22 @@ export const en = {
   tutorialStep8Title: 'Ready to Go!',
   tutorialStep9Title: 'Congratulations!',
   tutorialStep10Title: 'Start Using WhatsLeft',
+  tutorialStep1Desc: 'WhatsLeft helps you track expiry dates for food and household items to reduce waste, saving you money.',
+  tutorialStep2Desc: 'Tap the + button at the bottom to add your first item. You can enter it manually, use voice, or scan a barcode.',
+  tutorialStep3Desc: 'Enter the item name, category, expiry date, and notification time. This information will help you track your items effectively.',
+  tutorialStep4Desc: 'Your dashboard displays all your items. Use filters to view by category (food/household) or sort by expiry date.',
+  tutorialStep5Desc: 'Items are color-coded by expiry date: Green = safe, Yellow = expiring soon, Red = expired. Stay ahead!',
+  tutorialStep6Desc: 'Tap any item to view details, then edit or delete. You can also mark items as used or wasted.',
+  tutorialStep7Desc: 'Visit the stats page to view your usage patterns, see which categories need more attention, and reduce waste.',
+  tutorialStep8Desc: 'All set! You can now effectively track and manage your items. Get expiry notifications when needed.',
   tutorialStep9Desc: "Congratulations! You've completed the tutorial — you now know how to add, track, and manage items in WhatsLeft. Start exploring, and make the most of what you have at home. Need a refresher? You can always revisit the tutorial in Settings > About & Help.",
   tutorialStep10Desc: 'Here are a few quick tips to help you get the most out of WhatsLeft:',
+  tutorialStep1ContentTitle1: 'Add Items',
+  tutorialStep1ContentDesc1: 'Keep track of what\'s in your home. Add manually or use voice/camera input.',
+  tutorialStep1ContentTitle2: 'Dashboard',
+  tutorialStep1ContentDesc2: 'See all your items at a glance.',
+  tutorialStep1ContentTitle3: 'Notifications',
+  tutorialStep1ContentDesc3: 'Get reminders before items expire.',
   addItemAnswer: 'You can add items in three ways: Tap the + button at the bottom of the dashboard, use "Voice Input" after signing in, or use "Barcode Scanner" to scan items.',
   howToEditItem: 'How do I edit an item?',
   editItemAnswer: 'Tap on any item to view details, then tap the edit button. You can modify name, quantity, expiry date, and notification settings.',
@@ -383,8 +397,12 @@ export const en = {
   resetPasswordSuccess: 'Password reset email sent',
   resetPasswordSuccessMessage: 'Check your email for instructions to reset your password.',
   
+  // Add missing translations
+  previous: 'Previous',
+  back: 'Back',
+  
   // Notification settings
   notifications: 'Notifications',
   defaultNotifyDaysBefore: 'Default Notify Days Before',
   defaultNotifyDaysBeforeHint: 'Set the default number of days before expiry to notify you for newly added items',
-} 
+}

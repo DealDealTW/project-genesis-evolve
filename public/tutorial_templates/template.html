@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsLeft Tutorial Image Templates</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #ff8c00;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .template {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      position: relative;
+    }
+    .template h3 {
+      padding: 10px 15px;
+      margin: 0;
+      background-color: #ff8c00;
+      color: white;
+      font-size: 16px;
+    }
+    .template-content {
+      height: 400px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #fff5e6;
+      position: relative;
+    }
+    .template-content p {
+      text-align: center;
+      color: #666;
+      margin-top: 10px;
+    }
+    .mock-device {
+      width: 220px;
+      height: 400px;
+      background-color: white;
+      border-radius: 20px;
+      border: 10px solid #333;
+      position: relative;
+      overflow: hidden;
+    }
+    .mock-header {
+      height: 40px;
+      background-color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mock-notch {
+      width: 60px;
+      height: 20px;
+      background-color: #000;
+      border-radius: 0 0 10px 10px;
+    }
+    .mock-screen {
+      height: calc(100% - 80px);
+      background-color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+    .mock-navbar {
+      height: 40px;
+      background-color: #fff;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+    }
+    .nav-item {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #666;
+    }
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      background-color: #ddd;
+      border-radius: 5px;
+      margin-bottom: 2px;
+    }
+    .active .nav-icon {
+      background-color: #ff8c00;
+    }
+    .active {
+      color: #ff8c00;
+    }
+    .dashboard-item {
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin: 5px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .item-title {
+      font-weight: bold;
+      font-size: 10px;
+    }
+    .item-expiry {
+      font-size: 8px;
+      color: #ff4500;
+    }
+    .item-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: #666;
+    }
+    .item-category {
+      display: flex;
+      align-items: center;
+    }
+    .cat-icon {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 3px;
+    }
+    .food {
+      background-color: #4caf50;
+    }
+    .household {
+      background-color: #2196f3;
+    }
+    .floating-button {
+      position: absolute;
+      right: 10px;
+      bottom: 50px;
+      width: 40px;
+      height: 40px;
+      background-color: #ff8c00;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WhatsLeft Tutorial Image Templates</h1>
+    
+    <div class="image-grid">
+      <!-- 1. 歡迎頁面 -->
+      <div class="template">
+        <h3>1. 歡迎頁面</h3>
+        <div class="template-content">
+          <div class="mock-device">
+            <div class="mock-header">
+              <div class="mock-notch"></div>
+            </div>
+            <div class="mock-screen" style="background-color: #fff5e6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+              <div style="width: 80px; height: 80px; background-color: #ff8c00; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <div style="color: white; font-size: 40px; font-weight: bold;">W</div>
+              </div>
+              <div style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 10px; text-align: center;">WhatsLeft</div>
+              <div style="font-size: 8px; color: #666; text-align: center; margin-bottom: 20px;">智能家居物品管理工具</div>
+              <div style="font-size: 8px; color: #666; text-align: center; margin-bottom: 5px;">• 追蹤食品與家居用品</div>
+              <div style="font-size: 8px; color: #666; text-align: center; margin-bottom: 5px;">• 減少浪費，節省金錢</div>
+              <div style="font-size: 8px; color: #666; text-align: center; margin-bottom: 20px;">• 智能購物清單與提醒</div>
+              <div style="width: 120px; height: 30px; background-color: #ff8c00; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">開始使用</div>
+            </div>
+            <div class="mock-navbar">
+              <!-- 無導航欄 -->
+            </div>
+          </div>
+          <p>歡迎頁面模板</p>
+        </div>
+      </div>
+      
+      <!-- 2. 主控台概覽 -->
+      <div class="template">
+        <h3>2. 主控台概覽</h3>
+        <div class="template-content">
+          <div class="mock-device">
+            <div class="mock-header">
+              <div class="mock-notch"></div>
+            </div>
+            <div class="mock-screen" style="padding: 5px;">
+              <div style="display: flex; justify-content: space-between; padding: 5px;">
+                <div style="font-weight: bold; font-size: 14px;">我的物品</div>
+                <div style="display: flex;">
+                  <div style="width: 20px; height: 20px; background-color: #f0f0f0; border-radius: 5px; margin-right: 5px;"></div>
+                  <div style="width: 20px; height: 20px; background-color: #f0f0f0; border-radius: 5px;"></div>
+                </div>
+              </div>
+              
+              <div style="display: flex; flex-wrap: wrap; padding: 5px;">
+                <div class="dashboard-item" style="width: calc(50% - 10px);">
+                  <div class="item-header">
+                    <div class="item-title">蘋果</div>
+                    <div class="item-expiry">3天後到期</div>
+                  </div>
+                  <div class="item-details">
+                    <div class="item-category">
+                      <div class="cat-icon food"></div>
+                      <span>水果</span>
+                    </div>
+                    <div>數量: 5</div>
+                  </div>
+                </div>
+                
+                <div class="dashboard-item" style="width: calc(50% - 10px);">
+                  <div class="item-header">
+                    <div class="item-title">牛奶</div>
+                    <div class="item-expiry">5天後到期</div>
+                  </div>
+                  <div class="item-details">
+                    <div class="item-category">
+                      <div class="cat-icon food"></div>
+                      <span>飲料</span>
+                    </div>
+                    <div>數量: 2</div>
+                  </div>
+                </div>
+                
+                <div class="dashboard-item" style="width: calc(50% - 10px);">
+                  <div class="item-header">
+                    <div class="item-title">洗衣粉</div>
+                    <div class="item-expiry">-</div>
+                  </div>
+                  <div class="item-details">
+                    <div class="item-category">
+                      <div class="cat-icon household"></div>
+                      <span>清潔用品</span>
+                    </div>
+                    <div>數量: 1</div>
+                  </div>
+                </div>
+                
+                <div class="dashboard-item" style="width: calc(50% - 10px);">
+                  <div class="item-header">
+                    <div class="item-title">雞胸肉</div>
+                    <div class="item-expiry" style="color: red;">今天到期</div>
+                  </div>
+                  <div class="item-details">
+                    <div class="item-category">
+                      <div class="cat-icon food"></div>
+                      <span>肉類</span>
+                    </div>
+                    <div>數量: 2</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="floating-button">+</div>
+            </div>
+            <div class="mock-navbar">
+              <div class="nav-item active">
+                <div class="nav-icon"></div>
+                <span>首頁</span>
+              </div>
+              <div class="nav-item">
+                <div class="nav-icon"></div>
+                <span>購物</span>
+              </div>
+              <div class="nav-item">
+                <div class="nav-icon"></div>
+                <span>統計</span>
+              </div>
+              <div class="nav-item">
+                <div class="nav-icon"></div>
+                <span>設置</span>
+              </div>
+            </div>
+          </div>
+          <p>主控台概覽模板</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

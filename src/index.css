@@ -1,0 +1,544 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 60 20% 98%; /* 更亮的背景色 */
+    --foreground: 20 10% 15%;
+
+    --card: 60 20% 99%;
+    --card-foreground: 20 10% 15%;
+
+    --popover: 60 20% 99%;
+    --popover-foreground: 20 10% 15%;
+
+    --primary: 24 90% 55%; /* 微調橙色 */
+    --primary-foreground: 60 30% 98%;
+    
+    --primary-light: 24 90% 62%; /* 新增：亮橙色變體 */
+    --primary-dark: 24 90% 48%; /* 新增：深橙色變體 */
+
+    --secondary: 142 32% 82%; /* 微調綠色 */
+    --secondary-foreground: 20 10% 15%;
+
+    --muted: 60 20% 94%;
+    --muted-foreground: 20 10% 40%;
+
+    --accent: 200 85% 65%; /* 新增：藍色強調色 */
+    --accent-foreground: 200 40% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 60 30% 98%;
+
+    --warning: 45 96% 55%; /* 黃色 */
+    --warning-foreground: 45 100% 10%;
+
+    --border: 20 10% 88%;
+    --input: 20 10% 88%;
+    --ring: 24 90% 55%;
+
+    --radius: 0.75rem;
+    
+    /* 新增：自定義陰影 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 10px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.08);
+    
+    /* 新增：動畫持續時間 */
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 350ms;
+    
+    /* 新增：自定義顏色 */
+    --brand-orange: #FF6200;
+    --text-dark: #333333;
+    --text-medium: #666666;
+    --bg-white: #FFFFFF;
+    --bg-light-gray: #F5F5F5;
+  }
+
+  .dark {
+    /* 深色模式背景色調整為更暗的色調，但不是純黑色，避免眼睛疲勞 */
+    --background: 20 10% 10%;
+    --foreground: 60 25% 98%;  /* 更亮的前景色，提高對比度 */
+
+    /* 卡片背景色調整，提供更好的對比度 */
+    --card: 20 10% 15%;
+    --card-foreground: 60 25% 98%;
+
+    /* 彈出框背景色調整 */
+    --popover: 20 10% 15%;
+    --popover-foreground: 60 25% 98%;
+
+    /* 主色調整，深色模式下使用更亮的橙色，提高可見度 */
+    --primary: 24 90% 60%;
+    --primary-foreground: 60 30% 98%;
+    
+    /* 橙色變體調整 */
+    --primary-light: 24 90% 70%;
+    --primary-dark: 24 70% 52%;
+
+    /* 次要色調整為更鮮明的綠色 */
+    --secondary: 142 32% 45%;
+    --secondary-foreground: 60 20% 95%;
+
+    /* 柔和色調整 */
+    --muted: 20 10% 20%;
+    --muted-foreground: 60 20% 80%; /* 更亮的前景色 */
+
+    /* 強調色調整 */
+    --accent: 200 85% 55%;
+    --accent-foreground: 200 40% 98%;
+
+    /* 危險色調整 */
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 60 30% 98%;
+
+    /* 警告色調整 */
+    --warning: 45 96% 65%; /* 更亮的黃色 */
+    --warning-foreground: 45 10% 10%;
+
+    /* 邊框和輸入框顏色調整 */
+    --border: 20 10% 25%;
+    --input: 20 10% 25%;
+    --ring: 24 90% 60%;
+    
+    /* 深色模式陰影調整，使用更深的陰影 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 6px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.4);
+    
+    /* 自定義顏色調整 - 深色模式 */
+    --brand-orange: #FF7A33; /* 更亮的橙色 */
+    --text-dark: #F0F0F0;    /* 更亮的文字顏色 */
+    --text-medium: #C0C0C0;  /* 更亮的中等文字顏色 */
+    --bg-white: #1E1E1E;     /* 更深的背景色 */
+    --bg-light-gray: #282828; /* 更深的淺灰色 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-poppins;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  
+  /* 更新全局hover效果 */
+  .hover-effect {
+    @apply hover:bg-muted/50 transition-colors duration-200;
+  }
+  
+  /* 安全區域（頂部和底部）*/
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@layer components {
+  /* --- Poppins 字體樣式 --- */
+  
+  /* 應用標題 (App Title) */
+  .app-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700; /* Bold */
+    font-size: 24px;
+    color: var(--brand-orange);
+    letter-spacing: -0.5px;
+  }
+  
+  /* 區域標題 (Section Headers) */
+  .section-header {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700; /* Bold */
+    font-size: 18px;
+    color: var(--text-dark);
+    letter-spacing: -0.3px;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* 正文文字 (Body Text) */
+  .body-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400; /* Regular */
+    font-size: 16px;
+    color: var(--text-medium);
+    letter-spacing: 0;
+  }
+  
+  /* 按鈕文字 (Button Text) */
+  .button-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500; /* Medium */
+    font-size: 16px;
+    letter-spacing: 0;
+  }
+  
+  /* 標籤文字 (Label Text) */
+  .label-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400; /* Regular */
+    font-size: 12px;
+    color: var(--text-medium);
+    letter-spacing: 0;
+  }
+  
+  /* 強調標籤 (Accent Label) */
+  .accent-label {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400; /* Regular */
+    font-size: 12px;
+    color: var(--brand-orange);
+    letter-spacing: 0;
+  }
+  
+  /* 教學標題 (Tutorial Title) */
+  .tutorial-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700; /* Bold */
+    font-size: 20px;
+    color: var(--text-dark);
+    letter-spacing: -0.3px;
+  }
+  
+  /* --- 現有組件樣式 --- */
+  .item-expired {
+    @apply border-destructive;
+  }
+  
+  .item-warning {
+    @apply border-warning;
+  }
+  
+  .item-safe {
+    @apply border-secondary; /* Use secondary/accent for green border */
+  }
+  
+  /* 自定義陰影類 */
+  .shadow-custom-sm {
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .shadow-custom-md {
+    box-shadow: var(--shadow-md);
+  }
+  
+  .shadow-custom-lg {
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* 全局按鈕懸停效果 */
+  button[class*="ghost"], 
+  a[class*="ghost"],
+  [role="button"] {
+    @apply hover:bg-muted/50 hover:text-foreground transition-all duration-200;
+  }
+  
+  /* 滾動條美化 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/50;
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20;
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+}
+
+/* Add animation keyframes */
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 滑入動畫（從左側） */
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 微妙跳動動畫 */
+@keyframes subtle-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* 緩慢脈動動畫（適用於強調元素） */
+@keyframes pulse-slow {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@layer utilities {
+  /* 通用動畫類 */
+  .animate-slide-up-fade {
+    animation: slide-up-fade var(--duration-normal) ease forwards;
+  }
+  
+  .animate-slide-in-left {
+    animation: slide-in-left var(--duration-normal) ease forwards;
+  }
+  
+  .animate-subtle-bounce {
+    animation: subtle-bounce 2s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+  
+  /* 觸摸反饋 */
+  .touch-feedback {
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0);
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0.1, 1);
+  }
+  
+  .touch-feedback:active {
+    transform: scale(0.97);
+  }
+  
+  /* 為ActionButton組件添加觸控波紋效果 */
+  .action-button-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .action-button-ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+  }
+  
+  .action-button-ripple:focus:not(:active)::after {
+    animation: ripple 0.5s ease-out;
+  }
+  
+  @keyframes ripple {
+    0% {
+      transform: scale(0, 0) translate(-50%, -50%);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(20, 20) translate(-50%, -50%);
+      opacity: 0;
+    }
+  }
+  
+  /* 標準化按鈕樣式 */
+  .btn-standard {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    gap: 0.5rem;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0.1, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-standard:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* 大型按鈕（主操作） */
+  .btn-lg {
+    height: 3rem;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+  }
+  
+  /* 中型按鈕（標準大小） */
+  .btn-md {
+    height: 2.5rem;
+    padding: 0 1rem;
+    font-size: 0.875rem;
+  }
+  
+  /* 小型按鈕（次操作） */
+  .btn-sm {
+    height: 2rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  /* 卡片懸停效果 */
+  .card-hover {
+    @apply transition-all duration-300;
+    @apply hover:shadow-custom-md hover:-translate-y-1;
+  }
+  
+  /* 添加額外的利潤空間類 */
+  .spacing-sm { margin-bottom: 8px; }
+  .spacing-md { margin-bottom: 16px; }
+  .spacing-lg { margin-bottom: 24px; }
+}
+
+/* 確保轉場動畫在對話框打開時正確執行 */
+[data-state='open'] .animate-slide-up-fade {
+  animation: slide-up-fade var(--duration-normal) ease forwards;
+}
+
+/* 隱藏某些對話框的關閉按鈕 */
+.dialog-content-no-close-button > button[data-radix-dialog-close] {
+  display: none;
+}
+
+/* 深色模式優化 */
+.dark .text-orange-600 {
+  color: rgba(255, 160, 90, 1); /* 更亮的橙色 */
+}
+
+.dark .text-orange-700 {
+  color: rgba(255, 140, 70, 1);
+}
+
+.dark .text-orange-800 {
+  color: rgba(255, 130, 50, 1);
+}
+
+.dark .text-orange-900 {
+  color: rgba(255, 120, 40, 1);
+}
+
+/* 深色模式下邊框顏色增強 */
+.dark .border-orange-100 {
+  border-color: rgba(255, 110, 30, 0.2);
+}
+
+.dark .border-orange-200 {
+  border-color: rgba(255, 120, 40, 0.3);
+}
+
+/* 背景顏色調整 */
+.dark .bg-orange-50 {
+  background-color: rgba(60, 40, 30, 0.5);
+}
+
+.dark .bg-orange-100 {
+  background-color: rgba(80, 50, 30, 0.6);
+}
+
+.dark .hover\:bg-orange-50:hover {
+  background-color: rgba(100, 60, 40, 0.7);
+}
+
+/* 增強深色模式下的表單元素 */
+.dark input, 
+.dark select, 
+.dark textarea {
+  background-color: rgba(30, 30, 30, 0.8);
+  border-color: rgba(80, 80, 80, 0.5);
+}
+
+.dark input:focus, 
+.dark select:focus, 
+.dark textarea:focus {
+  border-color: var(--brand-orange);
+  box-shadow: 0 0 0 2px rgba(255, 120, 40, 0.25);
+}
+
+/* 增強深色模式下的按鈕 */
+.dark .bg-white {
+  background-color: rgba(40, 40, 40, 0.8);
+}
+
+/* 改進深色模式下的卡片視覺效果 */
+.dark .shadow-sm {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* 改進深色模式下的分割線 */
+.dark hr, 
+.dark .border-t, 
+.dark .border-b, 
+.dark .border-l, 
+.dark .border-r {
+  border-color: rgba(80, 80, 80, 0.3);
+}
+
+/* Toast增強樣式 */
+.toast-enhanced {
+  margin-bottom: 0.75rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  transform: translateY(0) scale(1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.toast-enhanced:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+.toast-viewport-enhanced {
+  padding: 0.75rem;
+  width: calc(100% - 1rem);
+  max-width: 28rem; /* 448px */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 適配深色模式 */
+@media (prefers-color-scheme: dark) {
+  .toast-enhanced {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.18);
+  }
+}

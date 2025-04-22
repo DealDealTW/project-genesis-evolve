@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">My React Project - Test</string>
+    <string name="title_activity_main">My React Project - Test</string>
+    <string name="package_name">com.yourcompany.vite_react_shadcn_ts</string>
+    <string name="custom_url_scheme">com.yourcompany.vite_react_shadcn_ts</string>
+</resources>
